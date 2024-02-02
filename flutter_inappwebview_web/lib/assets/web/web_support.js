@@ -1,6 +1,6 @@
-window.flutter_inappwebview = {
+window.toappHandler = {
     webViews: {},
-    createFlutterInAppWebView: function(viewId, iframeId) {
+    createFlutterInAppWebView: function (viewId, iframeId) {
         var webView = {
             viewId: viewId,
             iframeId: iframeId,
@@ -12,26 +12,26 @@ window.flutter_inappwebview = {
             documentTitle: null,
             functionMap: {},
             settings: {},
-            disableContextMenuHandler: function(event) {
+            disableContextMenuHandler: function (event) {
                 event.preventDefault();
                 event.stopPropagation();
                 return false;
             },
-            prepare: function(settings) {
+            prepare: function (settings) {
                 webView.settings = settings;
                 var iframe = document.getElementById(iframeId);
                 var iframeContainer = document.getElementById(iframeId + '-container');
 
-                document.addEventListener('fullscreenchange', function(event) {
+                document.addEventListener('fullscreenchange', function (event) {
                     // document.fullscreenElement will point to the element that
                     // is in fullscreen mode if there is one. If there isn't one,
                     // the value of the property is null.
                     if (document.fullscreenElement && document.fullscreenElement.id == iframeId) {
                         webView.isFullscreen = true;
-                        window.flutter_inappwebview.nativeCommunication('onEnterFullscreen', viewId);
+                        window.toappHandler.nativeCommunication('onEnterFullscreen', viewId);
                     } else if (!document.fullscreenElement && webView.isFullscreen) {
                         webView.isFullscreen = false;
-                        window.flutter_inappwebview.nativeCommunication('onExitFullscreen', viewId);
+                        window.toappHandler.nativeCommunication('onExitFullscreen', viewId);
                     } else {
                         webView.isFullscreen = false;
                     }
@@ -50,7 +50,7 @@ window.flutter_inappwebview = {
                         } catch (e) {
                             console.log(e);
                         }
-                        window.flutter_inappwebview.nativeCommunication('onLoadStart', viewId, [url]);
+                        window.toappHandler.nativeCommunication('onLoadStart', viewId, [url]);
 
                         try {
                             var oldLogs = {
@@ -61,8 +61,8 @@ window.flutter_inappwebview = {
                                 'warn': iframe.contentWindow.console.warn
                             };
                             for (var k in oldLogs) {
-                                (function(oldLog) {
-                                    iframe.contentWindow.console[oldLog] = function() {
+                                (function (oldLog) {
+                                    iframe.contentWindow.console[oldLog] = function () {
                                         var message = '';
                                         for (var i in arguments) {
                                             if (message == '') {
@@ -72,7 +72,7 @@ window.flutter_inappwebview = {
                                             }
                                         }
                                         oldLogs[oldLog].call(iframe.contentWindow.console, ...arguments);
-                                        window.flutter_inappwebview.nativeCommunication('onConsoleMessage', viewId, [oldLog, message]);
+                                        window.toappHandler.nativeCommunication('onConsoleMessage', viewId, [oldLog, message]);
                                     }
                                 })(k);
                             }
@@ -90,7 +90,7 @@ window.flutter_inappwebview = {
                                 } catch (e) {
                                     console.log(e);
                                 }
-                                window.flutter_inappwebview.nativeCommunication('onUpdateVisitedHistory', viewId, [iframeUrl]);
+                                window.toappHandler.nativeCommunication('onUpdateVisitedHistory', viewId, [iframeUrl]);
                             };
 
                             var originalReplaceState = iframe.contentWindow.history.replaceState;
@@ -102,7 +102,7 @@ window.flutter_inappwebview = {
                                 } catch (e) {
                                     console.log(e);
                                 }
-                                window.flutter_inappwebview.nativeCommunication('onUpdateVisitedHistory', viewId, [iframeUrl]);
+                                window.toappHandler.nativeCommunication('onUpdateVisitedHistory', viewId, [iframeUrl]);
                             };
 
                             var originalOpen = iframe.contentWindow.open;
@@ -111,7 +111,7 @@ window.flutter_inappwebview = {
                                 var windowId = webView.windowAutoincrementId;
                                 webView.windowAutoincrementId++;
                                 webView.windows[windowId] = newWindow;
-                                window.flutter_inappwebview.nativeCommunication('onCreateWindow', viewId, [windowId, url, target, windowFeatures]).then(function(){}, function(handledByClient) {
+                                window.toappHandler.nativeCommunication('onCreateWindow', viewId, [windowId, url, target, windowFeatures]).then(function () { }, function (handledByClient) {
                                     if (handledByClient) {
                                         newWindow.close();
                                     }
@@ -120,14 +120,14 @@ window.flutter_inappwebview = {
                             };
 
                             var originalPrint = iframe.contentWindow.print;
-                            iframe.contentWindow.print = function() {
+                            iframe.contentWindow.print = function () {
                                 var iframeUrl = iframe.src;
                                 try {
                                     iframeUrl = iframe.contentWindow.location.href;
                                 } catch (e) {
                                     console.log(e);
                                 }
-                                window.flutter_inappwebview.nativeCommunication('onPrintRequest', viewId, [iframeUrl]);
+                                window.toappHandler.nativeCommunication('onPrintRequest', viewId, [iframeUrl]);
                                 originalPrint.call(iframe.contentWindow);
                             };
 
@@ -141,13 +141,13 @@ window.flutter_inappwebview = {
                             var initialTitle = iframe.contentDocument.title;
                             var titleEl = iframe.contentDocument.querySelector('title');
                             webView.documentTitle = initialTitle;
-                            window.flutter_inappwebview.nativeCommunication('onTitleChanged', viewId, [initialTitle]);
+                            window.toappHandler.nativeCommunication('onTitleChanged', viewId, [initialTitle]);
                             if (titleEl != null) {
-                                new MutationObserver(function(mutations) {
+                                new MutationObserver(function (mutations) {
                                     var title = mutations[0].target.innerText;
                                     if (title != webView.documentTitle) {
                                         webView.documentTitle = title;
-                                        window.flutter_inappwebview.nativeCommunication('onTitleChanged', viewId, [title]);
+                                        window.toappHandler.nativeCommunication('onTitleChanged', viewId, [title]);
                                     }
                                 }).observe(
                                     titleEl,
@@ -158,8 +158,8 @@ window.flutter_inappwebview = {
                             var oldPixelRatio = iframe.contentWindow.devicePixelRatio;
                             iframe.contentWindow.addEventListener('resize', function (e) {
                                 var newPixelRatio = iframe.contentWindow.devicePixelRatio;
-                                if(newPixelRatio !== oldPixelRatio){
-                                    window.flutter_inappwebview.nativeCommunication('onZoomScaleChanged', viewId, [oldPixelRatio, newPixelRatio]);
+                                if (newPixelRatio !== oldPixelRatio) {
+                                    window.toappHandler.nativeCommunication('onZoomScaleChanged', viewId, [oldPixelRatio, newPixelRatio]);
                                     oldPixelRatio = newPixelRatio;
                                 }
                             });
@@ -171,7 +171,7 @@ window.flutter_inappwebview = {
                                 } catch (e) {
                                     console.log(e);
                                 }
-                                window.flutter_inappwebview.nativeCommunication('onUpdateVisitedHistory', viewId, [iframeUrl]);
+                                window.toappHandler.nativeCommunication('onUpdateVisitedHistory', viewId, [iframeUrl]);
                             });
 
                             iframe.contentWindow.addEventListener('scroll', function (event) {
@@ -183,15 +183,15 @@ window.flutter_inappwebview = {
                                 } catch (e) {
                                     console.log(e);
                                 }
-                                window.flutter_inappwebview.nativeCommunication('onScrollChanged', viewId, [x, y]);
+                                window.toappHandler.nativeCommunication('onScrollChanged', viewId, [x, y]);
                             });
 
                             iframe.contentWindow.addEventListener('focus', function (event) {
-                                window.flutter_inappwebview.nativeCommunication('onWindowFocus', viewId);
+                                window.toappHandler.nativeCommunication('onWindowFocus', viewId);
                             });
 
                             iframe.contentWindow.addEventListener('blur', function (event) {
-                                window.flutter_inappwebview.nativeCommunication('onWindowBlur', viewId);
+                                window.toappHandler.nativeCommunication('onWindowBlur', viewId);
                             });
                         } catch (e) {
                             console.log(e);
@@ -200,7 +200,7 @@ window.flutter_inappwebview = {
                         try {
 
                             if (!webView.settings.javaScriptCanOpenWindowsAutomatically) {
-                                iframe.contentWindow.open = function() {
+                                iframe.contentWindow.open = function () {
                                     throw new Error('JavaScript cannot open windows automatically');
                                 };
                             }
@@ -233,16 +233,16 @@ window.flutter_inappwebview = {
                             console.log(e);
                         }
 
-                        window.flutter_inappwebview.nativeCommunication('onLoadStop', viewId, [url]);
+                        window.toappHandler.nativeCommunication('onLoadStop', viewId, [url]);
                     });
                 }
             },
-            setSettings: function(newSettings) {
+            setSettings: function (newSettings) {
                 var iframe = webView.iframe;
                 try {
                     if (webView.settings.javaScriptCanOpenWindowsAutomatically != newSettings.javaScriptCanOpenWindowsAutomatically) {
                         if (!newSettings.javaScriptCanOpenWindowsAutomatically) {
-                            iframe.contentWindow.open = function() {
+                            iframe.contentWindow.open = function () {
                                 throw new Error('JavaScript cannot open windows automatically');
                             };
                         } else {
@@ -270,7 +270,7 @@ window.flutter_inappwebview = {
                             style.innerHTML = "body { overflow-y: hidden; }";
                             iframe.contentDocument.head.append(style);
                         } else {
-                             var styleElement = iframe.contentDocument.getElementById("settings.disableVerticalScroll");
+                            var styleElement = iframe.contentDocument.getElementById("settings.disableVerticalScroll");
                             if (styleElement) { styleElement.remove() }
                         }
                     }
@@ -282,7 +282,7 @@ window.flutter_inappwebview = {
                             style.innerHTML = "body { overflow-x: hidden; }";
                             iframe.contentDocument.head.append(style);
                         } else {
-                             var styleElement = iframe.contentDocument.getElementById("settings.disableHorizontalScroll");
+                            var styleElement = iframe.contentDocument.getElementById("settings.disableHorizontalScroll");
                             if (styleElement) { styleElement.remove() }
                         }
                     }
@@ -300,7 +300,7 @@ window.flutter_inappwebview = {
 
                 webView.settings = newSettings;
             },
-            reload: function() {
+            reload: function () {
                 var iframe = webView.iframe;
                 if (iframe != null && iframe.contentWindow != null) {
                     try {
@@ -311,7 +311,7 @@ window.flutter_inappwebview = {
                     }
                 }
             },
-            goBack: function() {
+            goBack: function () {
                 var iframe = webView.iframe;
                 if (iframe != null) {
                     try {
@@ -321,7 +321,7 @@ window.flutter_inappwebview = {
                     }
                 }
             },
-            goForward: function() {
+            goForward: function () {
                 var iframe = webView.iframe;
                 if (iframe != null) {
                     try {
@@ -331,7 +331,7 @@ window.flutter_inappwebview = {
                     }
                 }
             },
-            goBackOrForward: function(steps) {
+            goBackOrForward: function (steps) {
                 var iframe = webView.iframe;
                 if (iframe != null) {
                     try {
@@ -341,17 +341,17 @@ window.flutter_inappwebview = {
                     }
                 }
             },
-            evaluateJavascript: function(source) {
+            evaluateJavascript: function (source) {
                 var iframe = webView.iframe;
                 var result = null;
                 if (iframe != null) {
                     try {
                         result = JSON.stringify(iframe.contentWindow.eval(source));
-                    } catch (e) {}
+                    } catch (e) { }
                 }
                 return result;
             },
-            stopLoading: function(steps) {
+            stopLoading: function (steps) {
                 var iframe = webView.iframe;
                 if (iframe != null) {
                     try {
@@ -361,7 +361,7 @@ window.flutter_inappwebview = {
                     }
                 }
             },
-            getUrl: function() {
+            getUrl: function () {
                 var iframe = webView.iframe;
                 var url = iframe.src;
                 try {
@@ -371,7 +371,7 @@ window.flutter_inappwebview = {
                 }
                 return url;
             },
-            getTitle: function() {
+            getTitle: function () {
                 var iframe = webView.iframe;
                 var title = null;
                 try {
@@ -381,7 +381,7 @@ window.flutter_inappwebview = {
                 }
                 return title;
             },
-            injectJavascriptFileFromUrl: function(urlFile, scriptHtmlTagAttributes) {
+            injectJavascriptFileFromUrl: function (urlFile, scriptHtmlTagAttributes) {
                 var iframe = webView.iframe;
                 try {
                     var d = iframe.contentDocument;
@@ -392,11 +392,11 @@ window.flutter_inappwebview = {
                         }
                     }
                     if (script.id != null) {
-                        script.onload = function() {
-                            window.flutter_inappwebview.nativeCommunication('onInjectedScriptLoaded', webView.viewId, [script.id]);
+                        script.onload = function () {
+                            window.toappHandler.nativeCommunication('onInjectedScriptLoaded', webView.viewId, [script.id]);
                         }
-                        script.onerror = function() {
-                            window.flutter_inappwebview.nativeCommunication('onInjectedScriptError', webView.viewId, [script.id]);
+                        script.onerror = function () {
+                            window.toappHandler.nativeCommunication('onInjectedScriptError', webView.viewId, [script.id]);
                         }
                     }
                     script.src = urlFile;
@@ -407,7 +407,7 @@ window.flutter_inappwebview = {
                     console.log(e);
                 }
             },
-            injectCSSCode: function(source) {
+            injectCSSCode: function (source) {
                 var iframe = webView.iframe;
                 try {
                     var d = iframe.contentDocument;
@@ -420,7 +420,7 @@ window.flutter_inappwebview = {
                     console.log(e);
                 }
             },
-            injectCSSFileFromUrl: function(urlFile, cssLinkHtmlTagAttributes) {
+            injectCSSFileFromUrl: function (urlFile, cssLinkHtmlTagAttributes) {
                 var iframe = webView.iframe;
                 try {
                     var d = iframe.contentDocument;
@@ -444,11 +444,11 @@ window.flutter_inappwebview = {
                     console.log(e);
                 }
             },
-            scrollTo: function(x, y, animated) {
+            scrollTo: function (x, y, animated) {
                 var iframe = webView.iframe;
                 try {
                     if (animated) {
-                        iframe.contentWindow.scrollTo({top: y, left: x, behavior: 'smooth'});
+                        iframe.contentWindow.scrollTo({ top: y, left: x, behavior: 'smooth' });
                     } else {
                         iframe.contentWindow.scrollTo(x, y);
                     }
@@ -456,11 +456,11 @@ window.flutter_inappwebview = {
                     console.log(e);
                 }
             },
-            scrollBy: function(x, y, animated) {
+            scrollBy: function (x, y, animated) {
                 var iframe = webView.iframe;
                 try {
                     if (animated) {
-                        iframe.contentWindow.scrollBy({top: y, left: x, behavior: 'smooth'});
+                        iframe.contentWindow.scrollBy({ top: y, left: x, behavior: 'smooth' });
                     } else {
                         iframe.contentWindow.scrollBy(x, y);
                     }
@@ -468,7 +468,7 @@ window.flutter_inappwebview = {
                     console.log(e);
                 }
             },
-            printCurrentPage: function() {
+            printCurrentPage: function () {
                 var iframe = webView.iframe;
                 try {
                     iframe.contentWindow.print();
@@ -476,7 +476,7 @@ window.flutter_inappwebview = {
                     console.log(e);
                 }
             },
-            getContentHeight: function() {
+            getContentHeight: function () {
                 var iframe = webView.iframe;
                 try {
                     return iframe.contentDocument.documentElement.scrollHeight;
@@ -485,7 +485,7 @@ window.flutter_inappwebview = {
                 }
                 return null;
             },
-            getContentWidth: function() {
+            getContentWidth: function () {
                 var iframe = webView.iframe;
                 try {
                     return iframe.contentDocument.documentElement.scrollWidth;
@@ -494,7 +494,7 @@ window.flutter_inappwebview = {
                 }
                 return null;
             },
-            getSelectedText: function() {
+            getSelectedText: function () {
                 var iframe = webView.iframe;
                 try {
                     var txt;
@@ -512,7 +512,7 @@ window.flutter_inappwebview = {
                 }
                 return null;
             },
-            getScrollX: function() {
+            getScrollX: function () {
                 var iframe = webView.iframe;
                 try {
                     return iframe.contentWindow.scrollX;
@@ -521,7 +521,7 @@ window.flutter_inappwebview = {
                 }
                 return null;
             },
-            getScrollY: function() {
+            getScrollY: function () {
                 var iframe = webView.iframe;
                 try {
                     return iframe.contentWindow.scrollY;
@@ -530,7 +530,7 @@ window.flutter_inappwebview = {
                 }
                 return null;
             },
-            isSecureContext: function() {
+            isSecureContext: function () {
                 var iframe = webView.iframe;
                 try {
                     return iframe.contentWindow.isSecureContext;
@@ -539,7 +539,7 @@ window.flutter_inappwebview = {
                 }
                 return false;
             },
-            canScrollVertically: function() {
+            canScrollVertically: function () {
                 var iframe = webView.iframe;
                 try {
                     return iframe.contentDocument.body.scrollHeight > iframe.contentWindow.innerHeight;
@@ -548,7 +548,7 @@ window.flutter_inappwebview = {
                 }
                 return false;
             },
-            canScrollHorizontally: function() {
+            canScrollHorizontally: function () {
                 var iframe = webView.iframe;
                 try {
                     return iframe.contentDocument.body.scrollWidth > iframe.contentWindow.innerWidth;
@@ -557,7 +557,7 @@ window.flutter_inappwebview = {
                 }
                 return false;
             },
-            getSize: function() {
+            getSize: function () {
                 var iframeContainer = webView.iframeContainer;
                 var width = 0.0;
                 var height = 0.0;
@@ -583,7 +583,7 @@ window.flutter_inappwebview = {
 
         return webView;
     },
-    getCookieExpirationDate: function(timestamp) {
+    getCookieExpirationDate: function (timestamp) {
         return (new Date(timestamp)).toUTCString();
     }
 };
