@@ -33,4 +33,5 @@ export 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_pla
         HexColor,
         MapSize,
         MapEdgeInsets;
+
 export 'src/main.dart';
