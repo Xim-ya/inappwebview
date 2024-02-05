@@ -229,12 +229,14 @@ public class JavaScriptBridgeJS {
                         "    }" +
                         "};";
 
+        // + "._callHandler(arguments[0], _callHandlerID,
+        // JSON.stringify(Array.prototype.slice.call(arguments, 1)));"
         public static final String JAVASCRIPT_BRIDGE_JS_SOURCE = "if (window." + JAVASCRIPT_BRIDGE_NAME + " != null) {"
                         +
-                        "  window." + JAVASCRIPT_BRIDGE_NAME + ".callHandler = function() {" +
+                        "  window." + JAVASCRIPT_BRIDGE_NAME + ".postMessage = function() {" +
                         "    var _callHandlerID = setTimeout(function(){});" +
                         "    window." + JAVASCRIPT_BRIDGE_NAME
-                        + "._callHandler(arguments[0], _callHandlerID, JSON.stringify(Array.prototype.slice.call(arguments, 1)));"
+                        + "._callHandler('toappJSHandler', _callHandlerID, JSON.stringify(Array.prototype.slice.call(arguments, 0)));"
                         +
                         "    return new Promise(function(resolve, reject) {" +
                         "      window." + JAVASCRIPT_BRIDGE_NAME
