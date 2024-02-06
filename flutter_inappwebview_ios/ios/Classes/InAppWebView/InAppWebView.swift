@@ -589,6 +589,7 @@ public class InAppWebView: WKWebView, UIScrollViewDelegate, WKUIDelegate,
         configuration.userContentController.add(self, name: "onWebMessagePortMessageReceived")
         configuration.userContentController.removeScriptMessageHandler(forName: "onWebMessageListenerPostMessageReceived")
         configuration.userContentController.add(self, name: "onWebMessageListenerPostMessageReceived")
+        configuration.userContentController.add(self, name: "toappHandler") //will make window.webkit.messageHandlers.toappHandler.postMessage()
         configuration.userContentController.addUserOnlyScripts(initialUserScripts)
         configuration.userContentController.sync(scriptMessageHandler: self)
     }
@@ -2944,6 +2945,9 @@ if(window.\(JAVASCRIPT_BRIDGE_NAME)[\(_callHandlerID)] != null) {
                 }
                 webMessageListener.channelDelegate?.onPostMessage(message: webMessage, sourceOrigin: sourceOrigin, isMainFrame: isMainFrame)
             }
+        } else if message.name == "toappHandler", let messageBody = message.body as? String {
+            //TODO: 다음에 다시 시도할때 여기서 핸들링 해보기,, message.name이 이걸로 오는지도 모르겠다
+            print("sadfasdfasdfasd")
         }
     }
     
