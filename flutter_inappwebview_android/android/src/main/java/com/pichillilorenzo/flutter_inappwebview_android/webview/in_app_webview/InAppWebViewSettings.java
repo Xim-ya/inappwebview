@@ -104,7 +104,6 @@ public class InAppWebViewSettings implements ISettings<InAppWebViewInterface> {
   public Boolean hardwareAcceleration = true;
   public Boolean supportMultipleWindows = false;
   public String regexToCancelSubFramesLoading;
-  public String regexToCancelOverrideUrlLoading;
   public Integer overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS;
   public Boolean networkAvailable = null;
   public Integer scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY;
@@ -347,9 +346,6 @@ public class InAppWebViewSettings implements ISettings<InAppWebViewInterface> {
         case "regexToCancelSubFramesLoading":
           regexToCancelSubFramesLoading = (String) value;
           break;
-        case "regexToCancelOverrideUrlLoading":
-          regexToCancelOverrideUrlLoading = (String) value;
-          break;
         case "overScrollMode":
           overScrollMode = (Integer) value;
           break;
@@ -493,7 +489,6 @@ public class InAppWebViewSettings implements ISettings<InAppWebViewInterface> {
     settings.put("hardwareAcceleration", hardwareAcceleration);
     settings.put("supportMultipleWindows", supportMultipleWindows);
     settings.put("regexToCancelSubFramesLoading", regexToCancelSubFramesLoading);
-    settings.put("regexToCancelOverrideUrlLoading", regexToCancelOverrideUrlLoading);
     settings.put("overScrollMode", overScrollMode);
     settings.put("networkAvailable", networkAvailable);
     settings.put("scrollBarStyle", scrollBarStyle);
