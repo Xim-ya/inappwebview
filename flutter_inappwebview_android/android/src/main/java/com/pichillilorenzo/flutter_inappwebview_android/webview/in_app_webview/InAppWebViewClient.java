@@ -77,9 +77,9 @@ public class InAppWebViewClient extends WebViewClient {
     InAppWebView webView = (InAppWebView) view;
     if (webView.customSettings.useShouldOverrideUrlLoading) {
       Pattern pattern = Pattern.compile(httpPattern);
-      Matcher m = pattern.matcher(request.getUrl().toString());
-      Log.i(LOG_TAG, request.getUrl().toString() + " isMatch " + m.matches());
-      if (m.matches() == false) return false;
+      Matcher matcher = pattern.matcher(request.getUrl().toString());
+      Log.i(LOG_TAG, request.getUrl().toString() + " isMatch " + matcher.matches());
+      if (matcher.matches() == false) return false;
 
       boolean isRedirect = false;
       if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_RESOURCE_REQUEST_IS_REDIRECT)) {
