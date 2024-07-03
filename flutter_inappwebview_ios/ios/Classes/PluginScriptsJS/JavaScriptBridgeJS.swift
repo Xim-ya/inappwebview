@@ -7,8 +7,7 @@
 
 import Foundation
 
-let JAVASCRIPT_BRIDGE_NAME = "toappHandler"
-// let JAVASCRIPT_BRIDGE_NAME = "flutter_inappwebview"
+let JAVASCRIPT_BRIDGE_NAME = "flutter_inappwebview"
 let JAVASCRIPT_BRIDGE_JS_PLUGIN_SCRIPT_GROUP_NAME = "IN_APP_WEBVIEW_JAVASCRIPT_BRIDGE_JS_PLUGIN_SCRIPT"
 
 let JAVASCRIPT_BRIDGE_JS_PLUGIN_SCRIPT = PluginScript(
@@ -25,7 +24,7 @@ window.\(JAVASCRIPT_BRIDGE_NAME) = {};
 window.\(JAVASCRIPT_BRIDGE_NAME).callHandler = function() {
     var _windowId = \(WINDOW_ID_VARIABLE_JS_SOURCE);
     var _callHandlerID = setTimeout(function(){});
-    window.webkit.messageHandlers['callHandler'].postMessage( {'handlerName': 'toappJSHandler', '_callHandlerID': _callHandlerID, 'args': JSON.stringify(Array.prototype.slice.call(arguments, 0)), '_windowId': _windowId} );
+    window.webkit.messageHandlers['callHandler'].postMessage( {'handlerName': arguments[0], '_callHandlerID': _callHandlerID, 'args': JSON.stringify(Array.prototype.slice.call(arguments, 1)), '_windowId': _windowId} );
     return new Promise(function(resolve, reject) {
         window.\(JAVASCRIPT_BRIDGE_NAME)[_callHandlerID] = {resolve: resolve, reject: reject};
     });
