@@ -3,10 +3,13 @@ package com.pichillilorenzo.flutter_inappwebview_android.webview.in_app_webview;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ContentUris;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -14,9 +17,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -34,6 +39,8 @@ import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -58,7 +65,9 @@ import com.pichillilorenzo.flutter_inappwebview_android.webview.WebViewChannelDe
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -115,6 +124,8 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
   private Uri videoOutputFileUri;
   @Nullable
   private Uri imageOutputFileUri;
+
+//  private String cameraPhotoPath;
 
   public InAppWebViewChromeClient(@NonNull final InAppWebViewFlutterPlugin plugin,
                                   @NonNull InAppWebView inAppWebView, InAppBrowserDelegate inAppBrowserDelegate) {
@@ -848,12 +859,13 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
       return true;
     }
 
+
+    Uri[] results = null;
     // based off of which button was pressed, we get an activity result and a file
     // the camera activity doesn't properly return the filename* (I think?) so we use
     // this filename instead
     switch (requestCode) {
       case PICKER:
-        Uri[] results = null;
         if (resultCode == RESULT_OK) {
           results = getSelectedFiles(data, resultCode);
         }
@@ -866,11 +878,41 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
       case PICKER_LEGACY:
         Uri result = null;
         if (resultCode == RESULT_OK) {
-          result = data != null ? data.getData() : getCapturedMediaFile();
+          String filePath = "";
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            filePath = data.getDataString();
+            results = getSelectedFiles(data, resultCode);
+          }
+//          else {
+//            filePath = "file:" + getRealPath(getActivity(), data.getData());
+//          }
+
+          if (filePath.isEmpty()) {
+            result = data.getData();
+          }
+          else {
+            result = Uri.parse(filePath);
+          }
+        }
+
+        final Uri handleResult = result;
+
+        if (filePathCallback != null) {
+          filePathCallback.onReceiveValue(results);
         }
         if (filePathCallbackLegacy != null) {
-          filePathCallbackLegacy.onReceiveValue(result);
+          filePathCallbackLegacy.onReceiveValue(handleResult);
         }
+
+//        new Handler().postDelayed(new Runnable() {
+//          @Override
+//          public void run() {
+//            if (filePathCallbackLegacy != null) {
+//              filePathCallbackLegacy.onReceiveValue(handleResult);
+//            }
+//          }
+//        }, 500); // 2000 is the delay in milliseconds (2 seconds)
+
         break;
     }
 
@@ -880,6 +922,149 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
     videoOutputFileUri = null;
 
     return true;
+  }
+
+  private boolean isExternalStorageDocument(Uri uri) {
+    return "com.android.externalstorage.documents".equals(uri.getAuthority());
+  }
+
+  private boolean isDownloadsDocument(Uri uri) {
+    return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+  }
+
+
+  private boolean isMediaDocument(Uri uri) {
+    return "com.android.providers.media.documents".equals(uri.getAuthority());
+  }
+
+  private boolean isGooglePhotosUri(Uri uri) {
+    return "com.google.android.apps.photos.content".equals(uri.getAuthority());
+  }
+
+  private String copyFileToInternalStorage(Context context, Uri uri, String newDirName) {
+    Uri returnUri = uri;
+    Cursor returnCursor = context.getContentResolver().query(
+            returnUri,
+            new String[]{OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE},
+            null,
+            null,
+            null
+    );
+    int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+    returnCursor.moveToFirst();
+    String name = returnCursor.getString(nameIndex);
+
+    File output;
+    if (!newDirName.equals("")) {
+      File dir = new File(context.getFilesDir().toString() + "/" + newDirName);
+      if (!dir.exists()) {
+        dir.mkdir();
+      }
+      output = new File(context.getFilesDir().toString() + "/" + newDirName + "/" + name);
+    } else {
+      output = new File(context.getFilesDir().toString() + "/" + name);
+    }
+
+    try {
+      InputStream inputStream = context.getContentResolver().openInputStream(uri);
+      if (inputStream != null) {
+        FileOutputStream outputStream = new FileOutputStream(output);
+        int read;
+        int bufferSize = 1024;
+        byte[] buffers = new byte[bufferSize];
+        while ((read = inputStream.read(buffers)) != -1) {
+          outputStream.write(buffers, 0, read);
+        }
+        inputStream.close();
+        outputStream.close();
+      }
+      return output.getPath();
+    } catch (Exception e) {
+      // Handle the exception
+    }
+
+    return null;
+  }
+
+  private String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
+    // function body
+    Cursor cursor = null;
+    String column = "_data";
+    String[] projection = {column};
+    try {
+      cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+      if (cursor != null && cursor.moveToFirst()) {
+        int index = cursor.getColumnIndexOrThrow(column);
+        return cursor.getString(index);
+      }
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+    }
+    finally {
+      cursor.close();
+    }
+    return null;
+  }
+
+  private String getRealPath(Context context, Uri uri) {
+    // check here to KITKAT or new version
+    boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+
+    // DocumentProvider
+    if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+      // ExternalStorageProvider
+      if (isExternalStorageDocument(uri)) {
+        String docId = DocumentsContract.getDocumentId(uri);
+        String[] split = docId.split(":");
+        String type = split[0];
+
+        if ("primary".equalsIgnoreCase(type)) {
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            copyFileToInternalStorage(context, uri, "gjfiles");
+          } else {
+            return Environment.getExternalStorageDirectory() + "/" + split[1];
+          }
+        }
+      } else if (isDownloadsDocument(uri)) {
+        String id = DocumentsContract.getDocumentId(uri);
+        Uri contentUri = ContentUris.withAppendedId(
+                Uri.parse("content://downloads/public_downloads"),
+                Long.valueOf(id)
+        );
+
+        return getDataColumn(context, contentUri, null, null);
+      } else if (isMediaDocument(uri)) {
+        String docId = DocumentsContract.getDocumentId(uri);
+        String[] split = docId.split(":");
+        String type = split[0];
+
+        Uri contentUri = null;
+        if ("image".equals(type)) {
+          contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        } else if ("video".equals(type)) {
+          contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+        } else if ("audio".equals(type)) {
+          contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        }
+
+        String selection = "_id=?";
+        String[] selectionArgs = new String[]{split[1]};
+
+        return getDataColumn(context, contentUri, selection, selectionArgs);
+      }
+    } else if ("content".equalsIgnoreCase(uri.getScheme())) {
+      // Return the remote address
+      if (isGooglePhotosUri(uri)) {
+        return uri.getLastPathSegment();
+      } else {
+        return getDataColumn(context, uri, null, null);
+      }
+    } else if ("file".equalsIgnoreCase(uri.getScheme())) {
+      return uri.getPath();
+    }
+
+    return null;
   }
 
   private Uri[] getSelectedFiles(Intent data, int resultCode) {
@@ -1068,7 +1253,8 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
     imageOutputFileUri = getOutputUri(MediaStore.ACTION_IMAGE_CAPTURE);
     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageOutputFileUri);
 
-    Intent contentSelectionIntent = new Intent(Intent.ACTION_GET_CONTENT);
+    Intent contentSelectionIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+//    Intent contentSelectionIntent = new Intent(MediaStore.ACTION_PICK_IMAGES);
     contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE);
     contentSelectionIntent.setType("image/*"); // Assuming TYPE_IMAGE is a constant with value "image/*"
 
