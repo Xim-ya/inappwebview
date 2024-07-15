@@ -82,10 +82,12 @@ public class InAppWebViewClientCompat extends WebViewClientCompat {
       // http:// https:// 로 시작하는지 여부를 체크
       Pattern pattern = Pattern.compile(httpPattern);
       Matcher matcher = pattern.matcher(request.getUrl().toString());
-      Log.i(LOG_TAG, request.getUrl().toString() + " isMatch " + matcher.matches());
+      String host = request.getUrl().getHost();
+
+      Log.d(LOG_TAG, request.getUrl().toString() + " isMatch " + matcher.matches() + " / host : " + host);
       if (matcher.matches() == false) {
         // 주소에 gamejob이 포함되어 있으면 false를 리턴하여 onShouldOverrideUrlLoading 막는다.
-        if (request.getUrl().toString().contains(gamejobPattern)) {
+        if (host.contains(gamejobPattern)) {
           return false;
         }
       }
