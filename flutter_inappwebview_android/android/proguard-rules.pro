@@ -15,3 +15,6 @@
      private *;
 }
 -keep class com.pichillilorenzo.flutter_inappwebview_android.** { *; }
+
+#flutter bug donny
+-dontwarn android.window.BackEvent
