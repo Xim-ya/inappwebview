@@ -389,10 +389,12 @@ final public class InAppWebView extends InputAwareWebView implements InAppWebVie
     settings.setSaveFormData(customSettings.saveFormData);
     if (customSettings.incognito)
       setIncognito(true);
-    if (customSettings.hardwareAcceleration)
-      setLayerType(View.LAYER_TYPE_HARDWARE, null);
-    else
-      setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+    if (customSettings.useHybridComposition) {
+      if (customSettings.hardwareAcceleration)
+        setLayerType(View.LAYER_TYPE_HARDWARE, null);
+      else
+        setLayerType(View.LAYER_TYPE_NONE, null);
+    }
     if (customSettings.regexToCancelSubFramesLoading != null) {
       regexToCancelSubFramesLoadingCompiled = Pattern.compile(customSettings.regexToCancelSubFramesLoading);
     }
@@ -431,9 +433,6 @@ final public class InAppWebView extends InputAwareWebView implements InAppWebVie
               (boolean) customSettings.rendererPriorityPolicy.get("waivedWhenNotVisible"));
     }
 
-    if (WebViewFeature.isFeatureSupported(WebViewFeature.SUPPRESS_ERROR_PAGE)) {
-      WebSettingsCompat.setWillSuppressErrorPage(settings, customSettings.disableDefaultErrorPage);
-    }
     if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings, customSettings.algorithmicDarkeningAllowed);
     }
@@ -1024,11 +1023,13 @@ final public class InAppWebView extends InputAwareWebView implements InAppWebVie
     if (newSettingsMap.get("incognito") != null && customSettings.incognito != newCustomSettings.incognito)
       setIncognito(newCustomSettings.incognito);
 
-    if (newSettingsMap.get("hardwareAcceleration") != null && customSettings.hardwareAcceleration != newCustomSettings.hardwareAcceleration) {
-      if (newCustomSettings.hardwareAcceleration)
-        setLayerType(View.LAYER_TYPE_HARDWARE, null);
-      else
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+    if (customSettings.useHybridComposition) {
+      if (newSettingsMap.get("hardwareAcceleration") != null && customSettings.hardwareAcceleration != newCustomSettings.hardwareAcceleration) {
+        if (newCustomSettings.hardwareAcceleration)
+          setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        else
+          setLayerType(View.LAYER_TYPE_NONE, null);
+      }
     }
 
     if (newSettingsMap.get("regexToCancelSubFramesLoading") != null && (customSettings.regexToCancelSubFramesLoading == null ||
@@ -1101,11 +1102,6 @@ final public class InAppWebView extends InputAwareWebView implements InAppWebVie
         setHorizontalScrollbarTrackDrawable(new ColorDrawable(Color.parseColor(newCustomSettings.horizontalScrollbarTrackColor)));
     }
 
-    if (newSettingsMap.get("disableDefaultErrorPage") != null &&
-            !Util.objEquals(customSettings.disableDefaultErrorPage, newCustomSettings.disableDefaultErrorPage) &&
-            WebViewFeature.isFeatureSupported(WebViewFeature.SUPPRESS_ERROR_PAGE)) {
-      WebSettingsCompat.setWillSuppressErrorPage(settings, newCustomSettings.disableDefaultErrorPage);
-    }
     if (newSettingsMap.get("algorithmicDarkeningAllowed") != null &&
             !Util.objEquals(customSettings.algorithmicDarkeningAllowed, newCustomSettings.algorithmicDarkeningAllowed) &&
             WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

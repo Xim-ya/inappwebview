@@ -38,6 +38,7 @@ class PlatformWebViewCreationParams<T> {
   ///- iOS
   ///- MacOS
   ///- Web
+  ///- Windows
   ///{@endtemplate}
   final void Function(T controller)? onWebViewCreated;
 
@@ -54,6 +55,7 @@ class PlatformWebViewCreationParams<T> {
   ///- iOS ([Official API - WKNavigationDelegate.webView](https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455621-webview))
   ///- MacOS ([Official API - WKNavigationDelegate.webView](https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455621-webview))
   ///- Web
+  ///- Windows ([Official API - ICoreWebView2.add_NavigationStarting](https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/iwebview2webview?view=webview2-0.8.355#add_navigationstarting))
   ///{@endtemplate}
   final void Function(T controller, WebUri? url)? onLoadStart;
 
@@ -68,6 +70,7 @@ class PlatformWebViewCreationParams<T> {
   ///- iOS ([Official API - WKNavigationDelegate.webView](https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455629-webview))
   ///- MacOS ([Official API - WKNavigationDelegate.webView](https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455629-webview))
   ///- Web ([Official API - Window.onload](https://developer.mozilla.org/en-US/docs/Web/API/Window/load_event))
+  ///- Windows ([Official API - ICoreWebView2.add_NavigationCompleted](https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/iwebview2webview?view=webview2-0.8.355#add_navigationcompleted))
   ///{@endtemplate}
   final void Function(T controller, WebUri? url)? onLoadStop;
 
@@ -83,6 +86,7 @@ class PlatformWebViewCreationParams<T> {
   ///- Android native WebView ([Official API - WebViewClient.onReceivedError](https://developer.android.com/reference/android/webkit/WebViewClient#onReceivedError(android.webkit.WebView,%20android.webkit.WebResourceRequest,%20android.webkit.WebResourceError)))
   ///- iOS ([Official API - WKNavigationDelegate.webView](https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455623-webview))
   ///- MacOS ([Official API - WKNavigationDelegate.webView](https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455623-webview))
+  ///- Windows ([Official API - ICoreWebView2.add_NavigationCompleted](https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/iwebview2webview?view=webview2-0.8.355#add_navigationcompleted))
   ///{@endtemplate}
   final void Function(
           T controller, WebResourceRequest request, WebResourceError error)?
@@ -107,6 +111,7 @@ class PlatformWebViewCreationParams<T> {
   ///- Android native WebView ([Official API - WebViewClient.onReceivedHttpError](https://developer.android.com/reference/android/webkit/WebViewClient#onReceivedHttpError(android.webkit.WebView,%20android.webkit.WebResourceRequest,%20android.webkit.WebResourceResponse)))
   ///- iOS ([Official API - WKNavigationDelegate.webView](https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455643-webview))
   ///- MacOS ([Official API - WKNavigationDelegate.webView](https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455643-webview))
+  ///- Windows ([Official API - ICoreWebView2.add_NavigationCompleted](https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/iwebview2webview?view=webview2-0.8.355#add_navigationcompleted))
   ///{@endtemplate}
   final void Function(T controller, WebResourceRequest request,
       WebResourceResponse errorResponse)? onReceivedHttpError;
@@ -118,6 +123,7 @@ class PlatformWebViewCreationParams<T> {
   ///- Android native WebView ([Official API - WebChromeClient.onProgressChanged](https://developer.android.com/reference/android/webkit/WebChromeClient#onProgressChanged(android.webkit.WebView,%20int)))
   ///- iOS
   ///- MacOS
+  ///- Windows
   ///{@endtemplate}
   final void Function(T controller, int progress)? onProgressChanged;
 
@@ -131,6 +137,7 @@ class PlatformWebViewCreationParams<T> {
   ///- iOS
   ///- MacOS
   ///- Web
+  ///- Windows
   ///{@endtemplate}
   final void Function(T controller, ConsoleMessage consoleMessage)?
       onConsoleMessage;
@@ -264,6 +271,7 @@ class PlatformWebViewCreationParams<T> {
   ///- iOS ([Official API - WKUIDelegate.webView](https://developer.apple.com/documentation/webkit/wkuidelegate/1536907-webview))
   ///- MacOS ([Official API - WKUIDelegate.webView](https://developer.apple.com/documentation/webkit/wkuidelegate/1536907-webview))
   ///- Web
+  ///- Windows ([Official API - ICoreWebView2.add_NewWindowRequested](https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2?view=webview2-1.0.2210.55#add_newwindowrequested))
   ///{@endtemplate}
   final Future<bool?> Function(
       T controller, CreateWindowAction createWindowAction)? onCreateWindow;
@@ -276,6 +284,7 @@ class PlatformWebViewCreationParams<T> {
   ///- Android native WebView ([Official API - WebChromeClient.onCloseWindow](https://developer.android.com/reference/android/webkit/WebChromeClient#onCloseWindow(android.webkit.WebView)))
   ///- iOS ([Official API - WKUIDelegate.webViewDidClose](https://developer.apple.com/documentation/webkit/wkuidelegate/1537390-webviewdidclose))
   ///- MacOS ([Official API - WKUIDelegate.webViewDidClose](https://developer.apple.com/documentation/webkit/wkuidelegate/1537390-webviewdidclose))
+  ///- Windows ([Official API - ICoreWebView2.add_WindowCloseRequested](https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2?view=webview2-1.0.2210.55#add_windowcloserequested))
   ///{@endtemplate}
   final void Function(T controller)? onCloseWindow;
 
@@ -499,6 +508,7 @@ class PlatformWebViewCreationParams<T> {
   ///- iOS
   ///- MacOS
   ///- Web
+  ///- Windows ([Official API - ICoreWebView2.add_HistoryChanged](https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2?view=webview2-1.0.2210.55#add_historychanged))
   ///{@endtemplate}
   final void Function(T controller, WebUri? url, bool? isReload)?
       onUpdateVisitedHistory;
@@ -593,6 +603,7 @@ class PlatformWebViewCreationParams<T> {
   ///- iOS
   ///- MacOS
   ///- Web
+  ///- Windows ([Official API - ICoreWebView2.add_DocumentTitleChanged](https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2?view=webview2-1.0.2210.55#add_documenttitlechanged))
   ///{@endtemplate}
   final void Function(T controller, String? title)? onTitleChanged;
 
@@ -1052,6 +1063,7 @@ class PlatformWebViewCreationParams<T> {
   ///- iOS
   ///- MacOS
   ///- Web
+  ///- Windows
   ///{@endtemplate}
   final URLRequest? initialUrlRequest;
 
@@ -1063,6 +1075,7 @@ class PlatformWebViewCreationParams<T> {
   ///- iOS
   ///- MacOS
   ///- Web
+  ///- Windows
   ///{@endtemplate}
   final String? initialFile;
 
@@ -1074,6 +1087,7 @@ class PlatformWebViewCreationParams<T> {
   ///- iOS
   ///- MacOS
   ///- Web
+  ///- Windows
   ///{@endtemplate}
   final InAppWebViewInitialData? initialData;
 
@@ -1114,6 +1128,7 @@ class PlatformWebViewCreationParams<T> {
   ///- Android native WebView
   ///- iOS
   ///- MacOS
+  ///- Windows
   ///{@endtemplate}
   final UnmodifiableListView<UserScript>? initialUserScripts;
 

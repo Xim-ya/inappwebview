@@ -1,3 +1,9 @@
+## 1.1.0
+
+- Added `PlatformWebViewEnvironment` class
+- Updates minimum supported SDK version to Flutter 3.24/Dart 3.5.
+- Removed unsupported feature `WebViewFeature.SUPPRESS_ERROR_PAGE`
+
 ## 1.0.10
 
 - Merged "Added == operator and hashCode to WebUri" [#1941](https://github.com/pichillilorenzo/flutter_inappwebview/pull/1941) (thanks to [daisukeueta](https://github.com/daisukeueta))
